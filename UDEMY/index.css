@@ -30,6 +30,7 @@ img {
     height: 250px;
     border-radius: 50%;
     border: 5px solid rgb(206, 18, 181);
+    object-fit: cover;
 }
 
 h1 {
