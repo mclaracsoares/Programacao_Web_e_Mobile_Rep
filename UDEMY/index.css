@@ -26,8 +26,8 @@ a:hover {
 }
 
 img {
-    width: 200px;
-    height: 200px;
+    width: 250px;
+    height: 250px;
     border-radius: 50%;
     border: 5px solid rgb(206, 18, 181);
 }
@@ -38,7 +38,16 @@ h1 {
 
 footer {
     color: rgb(206, 18, 181);
-    font-size:x-large;
+    font-size: x-large;
     display: flex;
-    justify-content:space-around;
+    justify-content: center;
 }
+
+footer a {
+    margin: 0 10px; /* Adiciona espaço entre os links */
+}
+
+.cont {
+    padding: 0px 50px;
+}
+
