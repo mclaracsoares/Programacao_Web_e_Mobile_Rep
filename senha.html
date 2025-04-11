@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jogo Senha - Bulls and Cows</title>
+    <link rel="stylesheet" href="index.css" />
+    <style>
+      .container {
+        max-width: 600px;
+        margin: 40px auto;
+        background-color: white;
+        color: rgb(89, 62, 89);
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        text-align: center;
+        color: rgb(206, 18, 181);
+      }
+
+      input[type="text"] {
+        padding: 10px;
+        font-size: 16px;
+        width: calc(100% - 22px);
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin-bottom: 10px;
+      }
+
+      button {
+        padding: 10px 20px;
+        background-color: rgb(206, 18, 181);
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      button:hover {
+        background-color: rgb(150, 10, 130);
+      }
+
+      #historico {
+        margin-top: 20px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        padding-left: 0;
+      }
+
+      #historico li {
+        background: #f0e1f5;
+        padding: 10px;
+        border-radius: 5px;
+        color: rgb(89, 62, 89);
+        list-style: none;
+        text-align: center;
+      }
+
+      #contador {
+        margin-top: 15px;
+        text-align: center;
+        font-weight: bold;
+      }
+
+      #mensagem-vitoria {
+        margin-top: 20px;
+        font-weight: bold;
+        text-align: center;
+        font-size: 1.1rem;
+      }
+
+      .voltar {
+        display: block;
+        text-align: center;
+        margin-top: 30px;
+      }
+
+      .voltar a {
+        padding: 10px 20px;
+        background-color: #999;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+      }
+
+      .voltar a:hover {
+        background-color: #777;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Jogo Senha (Bulls and Cows)</h1>
+      <input
+        type="text"
+        id="tentativa"
+        placeholder="Digite 4 dígitos únicos"
+        maxlength="4"
+        onkeydown="if(event.key==='Enter') verificarTentativa()"
+      />
+      <button onclick="verificarTentativa()">Enviar</button>
+      <button
+        onclick="reiniciarJogo()"
+        style="margin-left: 10px; background-color: #999"
+      >
+        Reiniciar
+      </button>
+      <button
+        onclick="desistirJogo()"
+        style="margin-left: 10px; background-color: #c0392b"
+      >
+        Desistir
+      </button>
+
+      <div id="contador">Tentativas: 0</div>
+      <div id="mensagem-vitoria"></div>
+      <ul id="historico"></ul>
+
+      <div class="voltar">
+        <a href="portifolio.html">← Voltar ao Portfólio</a>
+      </div>
+    </div>
+
+    <script>
+      let senha = gerarSenha();
+      let historico = [];
+      let tentativas = 0;
+      let jogoFinalizado = false;
+      let tentativasRealizadas = new Set();
+
+      function gerarSenha() {
+        const numeros = [];
+        while (numeros.length < 4) {
+          const n = Math.floor(Math.random() * 10);
+          if (!numeros.includes(n)) numeros.push(n);
+        }
+        return numeros;
+      }
+
+      function verificarTentativa() {
+        if (jogoFinalizado) return;
+        const input = document.getElementById("tentativa");
+        const tentativa = input.value.trim();
+
+        if (
+          tentativa.length !== 4 ||
+          new Set(tentativa).size !== 4 ||
+          /\D/.test(tentativa)
+        ) {
+          alert("Digite exatamente 4 dígitos diferentes.");
+          return;
+        }
+
+        if (tentativasRealizadas.has(tentativa)) {
+          document.getElementById("mensagem-vitoria").textContent =
+            "Você já tentou essa combinação. Tente uma diferente.";
+          return;
+        }
+
+        tentativasRealizadas.add(tentativa);
+
+        const tentativaArr = tentativa.split("").map(Number);
+        let bulls = 0,
+          cows = 0;
+
+        for (let i = 0; i < 4; i++) {
+          if (tentativaArr[i] === senha[i]) {
+            bulls++;
+          } else if (senha.includes(tentativaArr[i])) {
+            cows++;
+          }
+        }
+
+        tentativas++;
+        document.getElementById(
+          "contador"
+        ).textContent = `Tentativas: ${tentativas}`;
+
+        historico.unshift(`${tentativa} → ${bulls} Bulls, ${cows} Cows`);
+        atualizarHistorico();
+        input.value = "";
+
+        if (bulls === 4) {
+          document.getElementById(
+            "mensagem-vitoria"
+          ).textContent = `Parabéns! Você acertou a senha ${senha.join(
+            ""
+          )} em ${tentativas} tentativas.`;
+          jogoFinalizado = true;
+          fetch("https://api.adviceslip.com/advice")
+            .then((res) => res.json())
+            .then((data) => {
+              const frase = data.slip.advice;
+              document.getElementById(
+                "mensagem-vitoria"
+              ).textContent += `\n💡 Dica da vida: ${frase}`;
+            });
+        }
+      }
+
+      function atualizarHistorico() {
+        const ul = document.getElementById("historico");
+        ul.innerHTML = "";
+        historico.forEach((item) => {
+          const li = document.createElement("li");
+          li.textContent = item;
+          ul.appendChild(li);
+        });
+      }
+
+      function reiniciarJogo() {
+        senha = gerarSenha();
+        historico = [];
+        tentativas = 0;
+        tentativasRealizadas.clear();
+        jogoFinalizado = false;
+        document.getElementById("contador").textContent = "Tentativas: 0";
+        document.getElementById("mensagem-vitoria").textContent = "";
+        atualizarHistorico();
+        document.getElementById("tentativa").value = "";
+      }
+
+      function desistirJogo() {
+        if (!jogoFinalizado) {
+          jogoFinalizado = true;
+          document.getElementById(
+            "mensagem-vitoria"
+          ).textContent = `Ah, que pena que você desistiu! A senha era ${senha.join(
+            ""
+          )}.`;
+          fetch("https://api.adviceslip.com/advice")
+            .then((res) => res.json())
+            .then((data) => {
+              const frase = data.slip.advice;
+              document.getElementById(
+                "mensagem-vitoria"
+              ).textContent += `\n💡 Dica da vida: ${frase}`;
+            });
+        }
+      }
+    </script>
+  </body>
+</html>
